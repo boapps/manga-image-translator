@@ -3,6 +3,7 @@ import time
 import asyncio
 from typing import List, Tuple
 from abc import abstractmethod
+from PIL import Image
 
 from ..utils import InfererModule, ModelWrapper, repeating_sequence, is_valuable_text
 
@@ -144,7 +145,7 @@ class CommonTranslator(InfererModule):
         _to_lang = self._LANGUAGE_CODE_MAP.get(to_lang)
         return _from_lang, _to_lang
 
-    async def translate(self, from_lang: str, to_lang: str, queries: List[str], use_mtpe: bool = False) -> List[str]:
+    async def translate(self, from_lang: str, to_lang: str, queries: List[str], use_mtpe: bool = False, image: Image = None) -> List[str]:
         """
         Translates list of queries of one language into another.
         """
@@ -180,7 +181,7 @@ class CommonTranslator(InfererModule):
             await self._ratelimit_sleep()
 
             # Translate
-            _translations = await self._translate(*self.parse_language_codes(from_lang, to_lang, fatal=True), queries)
+            _translations = await self._translate(*self.parse_language_codes(from_lang, to_lang, fatal=True), queries, image)
 
             # Extend returned translations list to have the same size as queries
             if len(_translations) < len(queries):
@@ -224,7 +225,7 @@ class CommonTranslator(InfererModule):
         return final_translations
 
     @abstractmethod
-    async def _translate(self, from_lang: str, to_lang: str, queries: List[str]) -> List[str]:
+    async def _translate(self, from_lang: str, to_lang: str, queries: List[str], image_path: str) -> List[str]:
         pass
 
     async def _ratelimit_sleep(self):

@@ -23,6 +23,7 @@ from .qwen2 import Qwen2Translator, Qwen2BigTranslator
 from .groq import GroqTranslator
 from .gemini import GeminiTranslator
 from .custom_openai import CustomOpenAiTranslator
+from .custom_vlm_description import CustomVlmDescriptionTranslator
 from ..config import Translator, TranslatorConfig, TranslatorChain
 from ..utils import Context
 
@@ -45,6 +46,7 @@ GPT_TRANSLATORS = {
     Translator.deepseek: DeepseekTranslator,
     Translator.groq:GroqTranslator,
     Translator.custom_openai: CustomOpenAiTranslator,
+    Translator.custom_vlm_description: CustomVlmDescriptionTranslator,
     Translator.gemini: GeminiTranslator,
 }
 
@@ -100,7 +102,7 @@ async def dispatch(chain: TranslatorChain, queries: List[str], translator_config
                 pass
             if translator_config:
                 translator.parse_args(translator_config)
-            queries = await translator.translate('auto', chain.langs[flag], queries, use_mtpe)
+            queries = await translator.translate('auto', chain.langs[flag], queries, use_mtpe, args.input)
             await translator.unload(device)
             flag+=1
         return queries
@@ -112,7 +114,7 @@ async def dispatch(chain: TranslatorChain, queries: List[str], translator_config
             await translator.load('auto', tgt_lang, device)
         if translator_config:
             translator.parse_args(translator_config)
-        queries = await translator.translate('auto', tgt_lang, queries, use_mtpe)
+        queries = await translator.translate('auto', tgt_lang, queries, use_mtpe, args.input)
         if args is not None:
             args['translations'][tgt_lang] = queries
     return queries
